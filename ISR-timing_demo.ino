@@ -4,7 +4,7 @@
 #define inPin A0
 
 float sensorVal;
-float sensorCalibrate;
+float sensorCalibrate; //useful only for sensors that do not reach a value of zero
 
 float outputRange = -20000;
 float outputMin = 65535;
