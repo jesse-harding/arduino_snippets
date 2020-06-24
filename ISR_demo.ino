@@ -8,13 +8,11 @@
 #define outPin 10 //define where our output LED is connected
 #define inPin A0 //define where our input potentiometer is connected
 
-float sensorVal; 
-float outputRange = 20000;
-float preloadMax = 65300;
-float timerPreload = preloadMax; //initialize with a fast value
-float timerReset = 1;
-boolean mode = 0; // 0 for compare match mode, 1 for overflow mode
-float dutyCycle = .5; //set duty cycle (only used in compare match mode)
+float sensorVal; //variable to hold input data from the potentiometer
+float timerPreload = 65000; //initialize with a fast value (this is the number that the count will start from in overflow mode)
+float timerReset = 500; //initialize with a fast value (this is the number at which the count will end in compare match mode)
+boolean mode = 0; // 0 for compare match mode (superior for most uses), 1 for overflow mode (inferior for most uses)
+float dutyCycle = .5; //set duty cycle (only used in compare match mode) (low duty cycle makes for clearer interferometry)
 
 void setup(){
   Serial.begin(9600);       //begin serial communication
@@ -34,21 +32,21 @@ void setup(){
 
   //CS12  CS11  CS10
   //  0     0     0     no clock signal (timer stopped)
-  //  0     0     1     no prescaling
-  //  0     1     0     1/8 prescaling
-  //  0     1     1     1/64 prescaling
-  //  1     0     0     1/256 prescaling
-  //  1     0     1     1/1024 prescaling
+  //  0     0     1     no prescaling (prescaler = 1)
+  //  0     1     0     1/8 = prescaler
+  //  0     1     1     1/64 = prescaler
+  //  1     0     0     1/256 = prescaler
+  //  1     0     1     1/1024 = prescaler
 
 
-if (mode == 0){
+if (mode == 0){ //compare match mode
   TCCR1B |= (1 << WGM12); // turn on CTC mode
   TIMSK1 |= (1 << OCIE1A);  // enable timer compare interrupt
-  TCNT1 = 0;  //preload timer to zero
-  OCR1A = 500;  //initializing to a fast value (must be < 65536)
+  TCNT1 = 0;  //initialize timer at zero
+  OCR1A = timerReset;  //initializing to a fast value (must be < 65536)
 }
 
-if (mode == 1){
+if (mode == 1){ //overflow mode
   TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
   TCNT1 = timerPreload;   // preload timer to maximum functional amount
 }
@@ -64,15 +62,13 @@ ISR(TIMER1_OVF_vect){
 
 // interrupt service routine for compare match mode
 ISR(TIMER1_COMPA_vect){
-
-  //here we change the compare match value for when the signal is high versus low
-  if (digitalRead(outPin)){
+  if (digitalRead(outPin)){ //if the pin is currently receiving power, change timing for the next cycle to inverse of duty cycle (off time)
     OCR1A = timerReset * (1 - dutyCycle);
   }
-  else{
+  else{ //if the pin is not currently receiving power, change timing for the next cycle to duty cycle (on time)
     OCR1A = timerReset * dutyCycle;
   }
-  digitalWrite(outPin, !digitalRead(outPin));
+  digitalWrite(outPin, !digitalRead(outPin)); //toggle between supplying and not supplying power to output pin
 }
 
 
@@ -80,14 +76,17 @@ void loop(){
   sensorVal = analogRead(inPin); //read data from potentiometer
   timerReset = map(sensorVal, 0, 1023, 65000, 500); //used for compare match mode
   timerPreload = map(sensorVal, 0, 1023, 25000, 65000); //used for overflow mode
-//  printInfo();
+  printInfo();
 }
 
 void printInfo(){
   if (mode == 0){
-  Serial.println(timerReset);
+  Serial.println(timerReset)  ; //print number that timer counts to in compare match mode
+  //in compare match mode, you can get real frequency: (prescaler * clock speed) / timerReset
+  float realFrequency = (16000000.0 / 64.0 / timerReset); //won't be completely accurate without testing cpu clock speed
+//  Serial.println(realFrequency);
   }
   if (mode == 1){
-  Serial.println(timerPreload);
+  Serial.println(timerPreload); //print number that timer counts from in overflow mode
   }
 }
