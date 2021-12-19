@@ -3,6 +3,18 @@
 
 //requires skywriter library: https://github.com/pimoroni/skywriter-hat/tree/master/arduino
 
+
+//Wiring
+//Flick  to   Arduino
+//VCC    to   3.3v
+//GND    to   GND
+//SDA    to   SDA
+//SCL    to   SCL
+//RESET  to   11
+//TS     to   10
+//LED1   to   8
+//LED2   to   9
+
 #include <Wire.h>
 #include <skywriter.h>
 
