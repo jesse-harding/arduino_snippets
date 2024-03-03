@@ -1,4 +1,7 @@
 # Node.js Datalogger Server
+Modified from 2 different Tom Igoe websockets projects
+node modules not included in this repo
+
 
 This is a server that serves a webpage, its resources, and some data. It saves incoming records to a text file called `data.json`, and sends items from the file when requested. This file exists even when the server is not running. 
 
