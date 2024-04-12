@@ -136,7 +136,7 @@ void loop() {
     }
 
     // wait a specified number of milliseconds
-    delay(100); //replace with millis? //100 is pushing the upper limit it seems
+    delay(200); //replace with millis? //100 is pushing the upper limit it seems
   }
 
   Serial.println("disconnected");
