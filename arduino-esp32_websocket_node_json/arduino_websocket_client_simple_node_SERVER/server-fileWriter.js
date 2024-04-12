@@ -9,6 +9,8 @@
   by Jesse Harding (with features from https://github.com/tigoe/DataloggingExamples/tree/main/WiFiDatalogger)
 */
 
+//you'll need to install express and ws using npm in your project folder after you npm init
+
 var express = require('express');			// include express.js
 var app = express();						// a local instance of it
 // var bodyParser = require('body-parser');	// include body-parser
